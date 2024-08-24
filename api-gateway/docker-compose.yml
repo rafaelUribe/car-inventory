@@ -1,0 +1,10 @@
+version: '3'
+services:
+  api-gateway:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+      - inventory-service
+      - cars-service
