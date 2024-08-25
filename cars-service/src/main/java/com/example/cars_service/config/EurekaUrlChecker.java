@@ -15,6 +15,5 @@ public class EurekaUrlChecker {
     @PostConstruct
     public void checkEurekaUrl() {
         String eurekaUrl = environment.getProperty("eureka.client.service-url.defaultZone");
-        System.out.println("eureka debug \n\nEureka URL: " + eurekaUrl + "\n\n");
     }
 }
