@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/elastic/")
+@RequestMapping("/api/elastic")
 public class ElasticCarController {
 
     private final ElasticCarService service;
@@ -40,7 +40,7 @@ public class ElasticCarController {
         }
     }
 
-    @GetMapping("/elastic/cars/search/as-you-type/{value}")
+    @GetMapping("/cars/search/as-you-type/{value}")
     public ResponseEntity<List<ElasticCar>> searchByName(@PathVariable String value) {
         List<ElasticCar> cars = service.searchByName(value);
 
@@ -51,7 +51,7 @@ public class ElasticCarController {
         }
     }
 
-    @GetMapping("/elastic/cars/search/full-text/{value}")
+    @GetMapping("/cars/search/full-text/{value}")
     public ResponseEntity<List<ElasticCar>> searchByDescription(@PathVariable String value) {
         List<ElasticCar> cars = service.searchByDescription(value);
 
