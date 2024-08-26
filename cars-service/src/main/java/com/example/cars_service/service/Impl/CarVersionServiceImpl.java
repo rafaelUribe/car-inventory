@@ -1,10 +1,12 @@
 package com.example.cars_service.service.Impl;
 
 import com.example.cars_service.model.CarVersion;
+import com.example.cars_service.model.CreateCarRequest;
 import com.example.cars_service.model.dto.Inventory;
 import com.example.cars_service.model.dto.VersionInventoryDTO;
 import com.example.cars_service.service.CarVersionService;
 import com.example.cars_service.repository.CarVersionRepository;
+import com.example.cars_service.service.ElasticCarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,6 +22,9 @@ public class CarVersionServiceImpl implements CarVersionService {
     @Autowired
     private CarVersionRepository carVersionRepository;
 
+    @Autowired
+    private ElasticCarService elasticCarService;
+
     private final WebClient.Builder webClientBuilder;
 
     @Autowired
@@ -33,6 +38,16 @@ public class CarVersionServiceImpl implements CarVersionService {
         CarVersion savedCarVersion = carVersionRepository.save(carVersion);
 
         createInventoryRecord(savedCarVersion);
+
+        CreateCarRequest request = CreateCarRequest.builder()
+                .name(savedCarVersion.getFullName())
+                .brand(savedCarVersion.getCarModel().getBrand().getName())
+                .model(savedCarVersion.getCarModel().getName())
+                .version(savedCarVersion.getVersionName())
+                .visible(true)
+                .build();
+
+        elasticCarService.createCar(request);
 
         return savedCarVersion;
     }
@@ -54,11 +69,29 @@ public class CarVersionServiceImpl implements CarVersionService {
 
     @Override
     public CarVersion updateCarVersion(Long id, CarVersion carVersionDetails) {
-        CarVersion carVersion = carVersionRepository.findById(id).orElseThrow(() -> new RuntimeException("Car Version not found"));
+        CarVersion carVersion = carVersionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Car Version not found"));
+
         carVersion.setVersionName(carVersionDetails.getVersionName());
         carVersion.setCarModel(carVersionDetails.getCarModel());
-        carVersion.setFullName(carVersionDetails.getCarModel().getBrand().getName() + " " + carVersionDetails.getCarModel().getName() + " " + carVersionDetails.getVersionName());
-        return carVersionRepository.save(carVersion);
+        carVersion.setFullName(carVersionDetails.getCarModel().getBrand().getName() + " " +
+                carVersionDetails.getCarModel().getName() + " " +
+                carVersionDetails.getVersionName());
+
+        CarVersion updatedCarVersion = carVersionRepository.save(carVersion);
+
+        // Populate CreateCarRequest and update in Elasticsearch
+        CreateCarRequest request = CreateCarRequest.builder()
+                .name(updatedCarVersion.getFullName())
+                .brand(updatedCarVersion.getCarModel().getBrand().getName())
+                .model(updatedCarVersion.getCarModel().getName())
+                .version(updatedCarVersion.getVersionName())
+                .visible(true)
+                .build();
+
+        elasticCarService.createCar(request);
+
+        return updatedCarVersion;
     }
 
     @Override
