@@ -20,4 +20,5 @@ public interface ElasticCarService {
 
     List<ElasticCar> getAvailableCars();
 
+    List<ElasticCar> searchByDescription(String value);
 }

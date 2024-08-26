@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class ElasticsearchRepository {
+public class  ElasticsearchRepository {
 
     private final String[] nameSearchFields = { "name.search", "name.search._2gram", "name.search._3gram" };
 
@@ -61,6 +61,20 @@ public class ElasticsearchRepository {
 
         var result = elasticClient.search(searchQuery, ElasticCar.class);
         return result.getSearchHits().stream().map(hit -> hit.getContent()).collect(Collectors.toList());
+    }
+
+    public List<ElasticCar> searchByDescription(String description) {
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQuery.must(QueryBuilders.matchQuery("name", description));
+
+        NativeSearchQueryBuilder nativeSearchQueryBuilder =
+                new NativeSearchQueryBuilder().withQuery(boolQuery);
+        NativeSearchQuery query = nativeSearchQueryBuilder.build();
+
+        var result = elasticClient.search(query, ElasticCar.class);
+        return result.getSearchHits().stream()
+                .map(hit -> hit.getContent())
+                .collect(Collectors.toList());
     }
 
 }

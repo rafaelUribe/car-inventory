@@ -47,6 +47,11 @@ public class ElasticCarServiceImpl implements ElasticCarService {
     }
 
     @Override
+    public List<ElasticCar> searchByDescription(String description) {
+        return repo.searchByDescription(description);
+    }
+
+    @Override
     public ElasticCar createCar(CreateCarRequest request) {
         if (request != null && StringUtils.hasLength(request.getName().trim())
                 && StringUtils.hasLength(request.getModel().trim())
